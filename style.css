@@ -1,0 +1,9 @@
+body {
+  background-color: #f8afaf;
+  color: white;
+  font-family: "Lekton", monospace;
+}
+
+#svgContainer {
+  background-color: #ededed;
+}
