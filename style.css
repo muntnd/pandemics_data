@@ -1,11 +1,11 @@
 body {
-  background-color: #ededed;
-  color: white;
+  background-color: #EBEBEB,
+    color: white;
   font-family: "Lekton", monospace;
 }
 
 #svgContainer {
-  background-color: #ededed;
+  background-color: #EBEBEB;
   width: 100%;
   height: 100%;
   position: absolute;
