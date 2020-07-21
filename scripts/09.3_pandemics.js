@@ -25,26 +25,26 @@ init();
 
 function init(){
    calculateMonths();
-   compDia();
-   //createNav();
+   createNav();
 
-  //  paper.node.onclick = function () {
-  //   if (state == 0) {
-  //     state = 1;
-  //     clearNav();
-  //     drawDiagram()
-  //   } else if (state == 1) {
-  //     state = 2;
-  //     clearNav();
-  //     clearDiagramm();
-  //     compDia();
-  //   } else if (state == 2) {
-  //     state = 0;
-  //     //clearDia();
-  //     clearDiagramm();
-  //     createNav();
-  //   }
-  // }
+   paper.node.onclick = function () {
+    if (state == 0) {
+      state = 1;
+      clearNav();
+      clearCompDia();
+      drawDiagram();
+    } else if (state == 1) {
+      state = 2;
+      clearNav();
+      clearDiagramm();
+      compDia();
+    } else if (state == 2) {
+      state = 0;
+      clearDiagramm();
+      clearCompDia();
+      createNav();
+    }
+  }
 }
 
 
@@ -67,7 +67,6 @@ function compDia(){
   let covidCases = monthlyCovid.map(monthlyCovid => monthlyCovid.casesMax);
   for (var i = 5; i < 18; i++) {
     covidCases[i] = 0;
-    sarsCases[i] = 0;
   }
 
   for (var i = 0; i < 18; i++){
@@ -81,49 +80,52 @@ function compDia(){
   for (let i = 0; i < 18; i++) {
     //radius hat größe von allen pandemien in dem ersten monat zusammen
     sarsR = map(areaToRadius(monthlyTotal[i]), 10, areaToRadius(10000), 1, 10);
-    let c = paper.circle((paperWidth/30)*(i+2),paperHeight - 90, sarsR).attr({
-      opacity:0.2,
-      fill: '#2B2D42',
-      id:"nav"
+    let c = paper.circle((paperWidth/22)*(i+2),paperHeight - 90, sarsR).attr({
+      opacity:0.02,
+      fill: '#000000',
+      id:"dicomp"
     });
     monthlyTotalNav.push(c);
 
-    let cc = paper.circle((paperWidth/30)*(i+2),paperHeight - 90, 2).attr({
+    let cc = paper.circle((paperWidth/22)*(i+2),paperHeight - 90, 2).attr({
       opacity:1,
       fill:'#000000',
-      id:"nav"
+      id:"dicomp"
     });
   }
 
+
   for (let i = 0; i < 18; i++) {
-    let r = paper.rect((paperWidth/30)*(i+1.5),800,paperWidth/30, paperHeight).attr({
+    let r = paper.rect((paperWidth/22)*(i+1.5),800,paperWidth/30, paperHeight).attr({
       opacity:0,
-      id: "nav"
+      id: "dicomp"
     });
     r.hover(
       function(e) {
           for (let j = 0; j < uiTotalRect.length; j++) {
             uiTotalRect[j].attr({opacity: 0});
           }
-          // alle vier datensätze übergeben
-          drawCompMap(monthlyCountrySars, monthlyCountrySwine, monthlyCountryEbola, monthlyCountryCovid, [i].dateRoundedRel, colors[i]);
+          drawCompMapSars(monthlyCountrySars, i, colors[0]);
+          drawCompMapSwine(monthlyCountrySwine, i,colors[1]);
+          drawCompMapEbola(monthlyCountryEbola, i,colors[2]);
+          drawCompMapCovid(monthlyCountryCovid, i,colors[3]);
           r.attr({opacity: 0});
-          monthlyTotalNav[i].attr({opacity: 0.7});
-        },
+          monthlyTotalNav[i].attr({opacity: 0.3});
+          },
         function(e) {
           clearCompMap();
-          monthlyTotalNav[i].attr({opacity: 0.2});
-        },
+          monthlyTotalNav[i].attr({opacity: 0.02});
+          },
       );
-    uiTotalRect.push(r);
-  }
+      uiTotalRect.push(r);
+    }
 }
 
 
 function drawDiagram() {
     clearNav();
     for (var i = 0; i < 4; i++) {
-      var radius = Math.sqrt(totals[i]) / 4;
+        var radius = Math.sqrt(totals[i]) / 4;
         var pathString = getPathStringDia(i * 90, (i+1) * 90, radius);
         paper.path(pathString).attr({
             fill: colors[i],
@@ -135,8 +137,8 @@ function drawDiagram() {
 
 //path string für map
 function getPathString(startAngle, endAngle, radius, x, y) {
-  x = x || diagramCenter.x;
-  y = y || diagramCenter.y;
+    x = x || diagramCenter.x;
+    y = y || diagramCenter.y;
 
     //damit es oben anfängt:
     startAngle -= 90;
@@ -214,7 +216,8 @@ function createNav(){
       id:"nav"
     });
     let r = paper.rect((paperWidth/39)*(i+1.5),800,paperWidth/39, paperHeight).attr({
-      opacity:0
+      opacity:0,
+      id:"nav"
     });
     let cc = paper.circle((paperWidth/39)*(i+2),paperHeight - 90, 2).attr({
       opacity:1,
@@ -259,7 +262,8 @@ function createNav(){
     });
     //hoverRect
     let r = paper.rect((paperWidth/39)*(i+7.5),800,paperWidth/39, paperHeight).attr({
-      opacity:0
+      opacity:0,
+      id:"nav"
     });
     //hoverInteraction
     r.hover(
@@ -340,6 +344,7 @@ function createNav(){
     for (let i = 0; i < 5; i++) {
       let r = paper.rect((paperWidth/39)*(i+30.5),800,paperWidth/39, paperHeight).attr({
         opacity:0,
+        id:"nav"
       });
       r.hover(
         function(e) {
@@ -408,18 +413,20 @@ function calculateMonths(){
     monthlyCountryCovid = cumulateData(dataCovid,['dateRounded', 'country'], [{value:'cases', method:'Max'}, {value:'longitude', method:'Max'}, {value:'latitude', method:'Max'}]);
     //for schleife für alle pandemien
 
-    for (var i = 0; i < monthlyCountrySars.length; i++) {
+    for (let i = 0; i < monthlyCountrySars.length; i++) {
       monthlyCountrySars[i].dateRoundedRel = monthlyCountrySars[i].dateRounded - 1238;
     }
-    for (var i = 0; i < monthlyCountrySwine.length; i++) {
+    for (let i = 0; i < monthlyCountrySwine.length; i++) {
       monthlyCountrySwine[i].dateRoundedRel = monthlyCountrySwine[i].dateRounded - 1312;
     }
-    for (var i = 0; i < monthlyCountryEbola.length; i++) {
+    for (let i = 0; i < monthlyCountryEbola.length; i++) {
       monthlyCountryEbola[i].dateRoundedRel = monthlyCountryEbola[i].dateRounded - 1375;
     }
-    for (var i = 0; i < monthlyCountryCovid.length; i++) {
+    for (let i = 0; i < monthlyCountryCovid.length; i++) {
       monthlyCountryCovid[i].dateRoundedRel = monthlyCountryCovid[i].dateRounded - 1440;
     }
+
+
 }
 
 function clearMap(){
@@ -430,6 +437,10 @@ function clearCompMap(){
   paper.selectAll("#comp").remove();
 };
 
+function clearCompDia(){
+  paper.selectAll("#dicomp").remove();
+};
+
 function clearDiagramm(){
   paper.selectAll("#dia").remove();
 };
@@ -438,32 +449,77 @@ function clearNav(){
   paper.selectAll("#nav").remove();
 };
 
-function drawCompMap(dataSa, dataSw, dataEb, dataCo, month, col) {
-  clearCompMap();
-  //console.log('drawCompMap', month, col)
-  console.log(data)
+function drawCompMapSars(data, month, col) {
   for (i = 0; i < data.length; i++) {
     if (data[i].dateRoundedRel == month) {
-      //console.log(data[i].longitudeMax, data[i].latitudeMax, data[i].casesMax)
+
       xPos = map(data[i].longitudeMax, 0 - 180, 180, 0, paperWidth);
       yPos = map(data[i].latitudeMax, 0 - 90, 90, 0, paperHeight);
+      let radius = Math.sqrt(data[i].casesMax) / 4
+      let pathString = getPathString(0, 90, radius, xPos, paperHeight - yPos);
+      paper.path(pathString).attr({
+          fill: col,
+          opacity: 0.7,
+          id: "comp"
+      });
+    }
+  }
+}
 
-      for (var j = 0; j < 4; j++) {
-        var radius = Math.sqrt(data[j].casesMax) / 4;
-          var pathString = getPathString(j * 90, (j+1) * 90, radius, xPos, yPos);
-          paper.path(pathString).attr({
-              fill: col,
-              opacity: 0.2,
-              id: "comp"
-          });
-      }
+function drawCompMapSwine(data, month, col) {
+  for (i = 0; i < data.length; i++) {
+    if (data[i].dateRoundedRel == month) {
+
+      xPos = map(data[i].longitudeMax, 0 - 180, 180, 0, paperWidth);
+      yPos = map(data[i].latitudeMax, 0 - 90, 90, 0, paperHeight);
+      let radius = Math.sqrt(data[i].casesMax) / 4
+      let pathString = getPathString(90, 180, radius, xPos, paperHeight - yPos);
+      paper.path(pathString).attr({
+          fill: col,
+          opacity: 0.7,
+          id: "comp"
+      });
+    }
+  }
+}
+function drawCompMapEbola(data, month, col) {
+  for (i = 0; i < data.length; i++) {
+
+    if (data[i].dateRoundedRel == month) {
+
+      xPos = map(data[i].longitudeMax, 0 - 180, 180, 0, paperWidth);
+      yPos = map(data[i].latitudeMax, 0 - 90, 90, 0, paperHeight);
+      let radius = Math.sqrt(data[i].casesMax) / 4
+      let pathString = getPathString(180, 270, radius, xPos, paperHeight - yPos);
+      paper.path(pathString).attr({
+          fill: col,
+          opacity: 0.7,
+          id: "comp"
+      });
+    }
+  }
+}
+function drawCompMapCovid(data, month, col) {
+  for (i = 0; i < data.length; i++) {
+
+    if (data[i].dateRoundedRel == month) {
+
+      xPos = map(data[i].longitudeMax, 0 - 180, 180, 0, paperWidth);
+      yPos = map(data[i].latitudeMax, 0 - 90, 90, 0, paperHeight);
+      let radius = Math.sqrt(data[i].casesMax) / 4
+      let pathString = getPathString(270, 0, radius, xPos, paperHeight - yPos);
+      paper.path(pathString).attr({
+          fill: col,
+          opacity: 0.7,
+          id: "comp"
+      });
     }
   }
 }
 
 function drawMap(data, month, col) {
   clearMap();
-  //console.log('drawMap', month, col)
+
   for (i = 0; i < data.length; i++) {
     if (data[i].dateRounded == month) {
       //console.log(data[i].longitudeMax, data[i].latitudeMax, data[i].casesMax)
