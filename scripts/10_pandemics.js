@@ -17,6 +17,7 @@ let monthlyCountrySwine;
 let monthlyCountryEbola;
 let monthlyCountryCovid;
 let totals = [5327,33902,14122,1662302];
+let totalsDeath = [348,170,4806,98220];
 let pieParts = [];
 
 let state = 0;
@@ -34,10 +35,12 @@ function init(){
       clearNav();
       clearCompDia();
       drawDiagram();
+      drawDiagramDeath();
     } else if (state == 1) {
       state = 2;
       clearNav();
       clearDiagramm();
+      clearDiagrammDeath();
       compDia();
     } else if (state == 2) {
       state = 0;
@@ -133,6 +136,19 @@ function drawDiagram() {
             fill: colors[i],
             opacity: 0.7,
             id: "dia"
+        });
+    }
+}
+
+function drawDiagramDeath() {
+    clearNav();
+    for (var i = 0; i < 4; i++) {
+        var radius = Math.sqrt(totalsDeath[i]) / 4;
+        var pathString = getPathStringDia(i * 90, (i+1) * 90, radius);
+        paper.path(pathString).attr({
+            fill: colors[i],
+            opacity: 1,
+            id: "diad"
         });
     }
 }
@@ -233,12 +249,9 @@ function createNav(){
           uiHoverRect[j].attr({opacity: 0});
         }
         drawMap(monthlyCountrySars, monthlySars[i].dateRounded, colors[0]);
-        //r.attr({opacity: 0.02});
         c.attr({opacity: 0.7});
       },
       function(e) {
-        //console.log('hoverOut', i);
-        //r.attr({opacity: 0});
         c.attr({opacity: 0.2});
         clearMap();
       },
@@ -252,7 +265,6 @@ function createNav(){
   for (let i = 0; i < 3; i++) {
     radius = map(areaToRadius(monthlySwine[i].casesMax), 10, areaToRadius(10000), 1, 10);
     let c = paper.circle((paperWidth/39)*(i+8),paperHeight - 90, radius).attr({
-    //  let c = paper.circle(250+(paperWidth/80+radius)*i,paperHeight - 90, radius).attr({
       opacity:0.2,
       fill: '#627F9D',
       id:"nav"
@@ -274,12 +286,9 @@ function createNav(){
           uiHoverRect[j].attr({opacity: 0});
         }
         drawMap(monthlyCountrySwine, monthlySwine[i].dateRounded, colors[1]);
-        //r.attr({opacity: 0.02});
         c.attr({opacity: 0.7});
       },
       function(e) {
-        //console.log('hoverOut', i);
-        //r.attr({opacity: 0});
         c.attr({opacity: 0.2});
         clearMap();
       },
@@ -294,7 +303,7 @@ function createNav(){
     radius = map(areaToRadius(monthlyEbola[i].casesMax), 10, areaToRadius(10000), 1, 10);
     let c = paper.circle((paperWidth/39)*(i+12),paperHeight - 90, radius).attr({
       opacity:0.2,
-      fill: '#2B2D42',
+      fill: '#9DA9A0',
       id:"nav"
     });
     let cc = paper.circle((paperWidth/39)*(i+12),paperHeight - 90, 2).attr({
@@ -403,19 +412,19 @@ function calculateMonths(){
 
 
     //calculate monthly peaks of cases and peaks per country
-    monthlySars = cumulateData(dataSars,['dateRounded'], [{value:'cases', method:'Max'}]);
-    monthlyCountrySars = cumulateData(dataSars,['dateRounded', 'country'], [{value:'cases', method:'Max'}, {value:'longitude', method:'Max'}, {value:'latitude', method:'Max'}]);
+    monthlySars = cumulateData(dataSars,['dateRounded'], [{value:'cases', method:'Max'}, {value:'deaths', method:'Max'}]);
+    monthlyCountrySars = cumulateData(dataSars,['dateRounded', 'country'], [{value:'cases', method:'Max'},{value:'deaths', method:'Max'}, {value:'longitude', method:'Max'}, {value:'latitude', method:'Max'}]);
 
-    monthlySwine = cumulateData(dataSwine,['dateRounded'], [{value:'cases', method:'Max'}]);
-    monthlyCountrySwine = cumulateData(dataSwine,['dateRounded', 'country'], [{value:'cases', method:'Max'}, {value:'longitude', method:'Max'}, {value:'latitude', method:'Max'}]);
+    monthlySwine = cumulateData(dataSwine,['dateRounded'], [{value:'cases', method:'Max'}, {value:'deaths', method:'Max'}]);
+    monthlyCountrySwine = cumulateData(dataSwine,['dateRounded', 'country'], [{value:'cases', method:'Max'}, {value:'deaths', method:'Max'}, {value:'longitude', method:'Max'}, {value:'latitude', method:'Max'}]);
 
-    monthlyEbola = cumulateData(dataEbola,['dateRounded'], [{value:'cases', method:'Max'}]);
-    monthlyCountryEbola = cumulateData(dataEbola,['dateRounded', 'country'], [{value:'cases', method:'Max'}, {value:'longitude', method:'Max'}, {value:'latitude', method:'Max'}]);
+    monthlyEbola = cumulateData(dataEbola,['dateRounded'], [{value:'cases', method:'Max'}, {value:'deaths', method:'Max'}]);
+    monthlyCountryEbola = cumulateData(dataEbola,['dateRounded', 'country'], [{value:'cases', method:'Max'}, {value:'deaths', method:'Max'}, {value:'longitude', method:'Max'}, {value:'latitude', method:'Max'}]);
 
-    monthlyCovid = cumulateData(dataCovid,['dateRounded'], [{value:'cases', method:'Max'}]);
-    monthlyCountryCovid = cumulateData(dataCovid,['dateRounded', 'country'], [{value:'cases', method:'Max'}, {value:'longitude', method:'Max'}, {value:'latitude', method:'Max'}]);
-    //for schleife für alle pandemien
+    monthlyCovid = cumulateData(dataCovid,['dateRounded'], [{value:'cases', method:'Max'}, {value:'deaths', method:'Max'}]);
+    monthlyCountryCovid = cumulateData(dataCovid,['dateRounded', 'country'], [{value:'cases', method:'Max'},{value:'deaths', method:'Max'}, {value:'longitude', method:'Max'}, {value:'latitude', method:'Max'}]);
 
+    //for schleife für relative monate alle pandemien
     for (let i = 0; i < monthlyCountrySars.length; i++) {
       monthlyCountrySars[i].dateRoundedRel = monthlyCountrySars[i].dateRounded - 1238;
     }
@@ -428,8 +437,6 @@ function calculateMonths(){
     for (let i = 0; i < monthlyCountryCovid.length; i++) {
       monthlyCountryCovid[i].dateRoundedRel = monthlyCountryCovid[i].dateRounded - 1440;
     }
-
-
 }
 
 function clearMap(){
@@ -446,6 +453,10 @@ function clearCompDia(){
 
 function clearDiagramm(){
   paper.selectAll("#dia").remove();
+};
+
+function clearDiagrammDeath(){
+  paper.selectAll("#diad").remove();
 };
 
 function clearNav(){
@@ -466,6 +477,18 @@ function drawCompMapSars(data, month, col) {
           id: "comp"
       });
     }
+    if (data[i].dateRoundedRel == month) {
+
+      xPos = map(data[i].longitudeMax, 0 - 180, 180, 0, paperWidth);
+      yPos = map(data[i].latitudeMax, 0 - 90, 90, 0, paperHeight);
+      let radius = Math.sqrt(data[i].deathsMax) / 4
+      let pathString = getPathString(0, 90, radius, xPos, paperHeight - yPos);
+      paper.path(pathString).attr({
+          fill: col,
+          opacity: 0.7,
+          id: "comp"
+      });
+    }
   }
 }
 
@@ -476,6 +499,18 @@ function drawCompMapSwine(data, month, col) {
       xPos = map(data[i].longitudeMax, 0 - 180, 180, 0, paperWidth);
       yPos = map(data[i].latitudeMax, 0 - 90, 90, 0, paperHeight);
       let radius = Math.sqrt(data[i].casesMax) / 4
+      let pathString = getPathString(90, 180, radius, xPos, paperHeight - yPos);
+      paper.path(pathString).attr({
+          fill: col,
+          opacity: 0.7,
+          id: "comp"
+      });
+    }
+    if (data[i].dateRoundedRel == month) {
+
+      xPos = map(data[i].longitudeMax, 0 - 180, 180, 0, paperWidth);
+      yPos = map(data[i].latitudeMax, 0 - 90, 90, 0, paperHeight);
+      let radius = Math.sqrt(data[i].deathsMax) / 4
       let pathString = getPathString(90, 180, radius, xPos, paperHeight - yPos);
       paper.path(pathString).attr({
           fill: col,
@@ -501,6 +536,18 @@ function drawCompMapEbola(data, month, col) {
           id: "comp"
       });
     }
+    if (data[i].dateRoundedRel == month) {
+
+      xPos = map(data[i].longitudeMax, 0 - 180, 180, 0, paperWidth);
+      yPos = map(data[i].latitudeMax, 0 - 90, 90, 0, paperHeight);
+      let radius = Math.sqrt(data[i].deathsMax) / 4
+      let pathString = getPathString(180, 270, radius, xPos, paperHeight - yPos);
+      paper.path(pathString).attr({
+          fill: col,
+          opacity: 0.7,
+          id: "comp"
+      });
+    }
   }
 }
 
@@ -512,6 +559,18 @@ function drawCompMapCovid(data, month, col) {
       xPos = map(data[i].longitudeMax, 0 - 180, 180, 0, paperWidth);
       yPos = map(data[i].latitudeMax, 0 - 90, 90, 0, paperHeight);
       let radius = Math.sqrt(data[i].casesMax) / 4
+      let pathString = getPathString(270, 0, radius, xPos, paperHeight - yPos);
+      paper.path(pathString).attr({
+          fill: col,
+          opacity: 0.7,
+          id: "comp"
+      });
+    }
+    if (data[i].dateRoundedRel == month) {
+
+      xPos = map(data[i].longitudeMax, 0 - 180, 180, 0, paperWidth);
+      yPos = map(data[i].latitudeMax, 0 - 90, 90, 0, paperHeight);
+      let radius = Math.sqrt(data[i].deathsMax) / 4
       let pathString = getPathString(270, 0, radius, xPos, paperHeight - yPos);
       paper.path(pathString).attr({
           fill: col,
@@ -534,6 +593,37 @@ function drawMap(data, month, col) {
       paper.circle(xPos, paperHeight - yPos, radius).attr({
         fill: col,
         opacity: 0.6,
+        id: "map"
+      });
+    }
+  }
+  for (i = 0; i < data.length; i++) {
+    if (data[i].dateRounded == month) {
+      //console.log(data[i].longitudeMax, data[i].latitudeMax, data[i].casesMax)
+      xPos = map(data[i].longitudeMax, 0 - 180, 180, 0, paperWidth);
+      yPos = map(data[i].latitudeMax, 0 - 90, 90, 0, paperHeight);
+      radius = map(areaToRadius(data[i].deathsMax), 0, areaToRadius(17000), 1, 30);
+      paper.circle(xPos, paperHeight - yPos, radius).attr({
+        fill: col,
+        opacity: 1,
+        id: "map"
+      });
+    }
+  }
+}
+
+function drawDeathMap(data, month, col) {
+  clearMap();
+
+  for (i = 0; i < data.length; i++) {
+    if (data[i].dateRounded == month) {
+      //console.log(data[i].longitudeMax, data[i].latitudeMax, data[i].casesMax)
+      xPos = map(data[i].longitudeMax, 0 - 180, 180, 0, paperWidth);
+      yPos = map(data[i].latitudeMax, 0 - 90, 90, 0, paperHeight);
+      radius = map(areaToRadius(data[i].deathsMax), 0, areaToRadius(17000), 1, 30);
+      paper.circle(xPos, paperHeight - yPos, radius).attr({
+        fill: col,
+        opacity: 1,
         id: "map"
       });
     }
